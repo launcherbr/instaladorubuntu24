@@ -302,38 +302,26 @@ system_node_install() {
   printf "${WHITE} 💻 Instalando nodejs...${GRAY_LIGHT}"
   printf "\n\n"
 
-system_node_install() {
-  print_banner
-  printf "${WHITE} 💻 Instalando nodejs...${GRAY_LIGHT}"
-  printf "\n\n"
-
   sleep 2
 
   sudo su - root <<EOF
   curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
   apt-get install -y nodejs
+  sleep 2
   npm install -g npm@latest
-  timedatectl set-timezone America/Sao_Paulo
-  
-EOF
-
-  # --- INSTALAÇÃO ROBUSTA DO POSTGRESQL ---
-  echo "[+] Configurando o repositório do PostgreSQL..."
-  
-  # Cria o diretório para a chave
+  sleep 2
   sudo install -d /usr/share/postgresql-common/pgdg
-  
-  # Baixa a chave GPG
   sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
 
-  # Cria o arquivo de repositório usando lsb_release e tee (método recomendado)
-  echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+  # Executa o source e o echo no mesmo contexto de shell
+  sh -c '. /etc/os-release && echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt \$VERSION_CODENAME-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 
-  # Instala o PostgreSQL
-  echo "[+] Instalando o PostgreSQL..."
   sudo apt update
   sudo apt -y install postgresql
+  sudo timedatectl set-timezone America/Sao_Paulo
 
+EOF  
+  
   sleep 2
 }
 #######################################
