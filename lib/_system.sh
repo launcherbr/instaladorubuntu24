@@ -336,35 +336,35 @@ system_docker_install() {
 
   sleep 2
 
+  # Usando o mesmo padrão do restante do script para consistência e previsibilidade
+  sudo su - root <<EOF
   # Verifica se o Docker já está instalado
   if command -v docker &>/dev/null; then
-    echo -e "${GREEN} Docker já está instalado.${NC}"
+    echo "Docker já está instalado."
   else
-    echo -e "${WHITE} Instalando pré-requisitos e adicionando repositório Docker (método moderno)...${NC}"
-    # O 'sudo' aqui é usado fora do heredoc, mas cada comando dentro é 'sudo'ificado
-    sudo apt update
-    sudo apt install -y ca-certificates curl gnupg lsb-release
+    echo "Instalando pré-requisitos e adicionando repositório Docker..."
+    apt-get update
+    apt-get install -y ca-certificates curl gnupg lsb-release
 
     # Adiciona a chave GPG oficial do Docker de forma segura
-    sudo mkdir -p /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+    mkdir -p /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    chmod a+r /etc/apt/keyrings/docker.gpg
 
-    # Adiciona o repositório Docker para a versão correta do Ubuntu (dinâmico)
-    echo -e \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    # Adiciona o repositório Docker (com escapes para execução correta dentro do EOF)
+    echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \$(\. /etc/os-release && echo "\$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list
 
-    echo -e "${WHITE} Atualizando índices de pacotes e instalando Docker CE e componentes...${NC}"
-    sudo apt update
-    sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    echo "Atualizando e instalando Docker CE..."
+    apt-get update
+    apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-    # Adiciona o usuário atual ao grupo 'docker' para rodar comandos sem sudo
-    sudo usermod -aG docker "$USER"
-    echo -e "${GREEN} Docker instalado com sucesso! Por favor, faça logout e login novamente para que as alterações do grupo 'docker' tenham efeito, ou execute 'newgrp docker'.${NC}"
+    # IMPORTANTE: Adiciona o usuário 'deploy' ao grupo docker
+    usermod -aG docker deploy
+    
+    echo "Docker instalado com sucesso! O usuário 'deploy' poderá executar comandos docker."
   fi
-  sleep 2 # Pequeno atraso após a instalação do Docker
+EOF
+  sleep 2
 }
 #######################################
 # Ask for file location containing
