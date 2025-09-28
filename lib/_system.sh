@@ -13,10 +13,6 @@ system_create_user() {
   printf "\n\n"
 
   sleep 2
-  
-  sudo apt update
-
-  sleep 2
 
   sudo su - root <<EOF
   # Check if user already exists
@@ -46,7 +42,6 @@ system_git_clone() {
   printf "${WHITE} 💻 Fazendo download do código Whaticket...${GRAY_LIGHT}"
   printf "\n\n"
 
-
   sleep 2
 
   sudo su - deploy <<EOF
@@ -54,7 +49,6 @@ system_git_clone() {
 
   # Permissões
   sudo chown -R deploy:deploy /home/deploy/${instancia_add}
-
 
   sleep 2
 }
@@ -305,7 +299,7 @@ system_node_install() {
   sleep 2
 
   sudo su - root <<EOF
-  curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+  curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
   apt-get install -y nodejs
   sleep 2
   npm install -g npm@latest
@@ -319,9 +313,9 @@ system_node_install() {
   sudo apt update
   sudo apt -y install postgresql
   sudo timedatectl set-timezone America/Sao_Paulo
-
-EOF  
   
+EOF
+
   sleep 2
 }
 #######################################
@@ -336,29 +330,34 @@ system_docker_install() {
 
   sleep 2
 
-  # Usando o mesmo padrão do restante do script para consistência e previsibilidade
   sudo su - root <<EOF
   # Verifica se o Docker já está instalado
   if command -v docker &>/dev/null; then
     echo "Docker já está instalado."
   else
-    echo "Instalando pré-requisitos e adicionando repositório Docker..."
+    echo "Instalando pré-requisitos..."
     apt-get update
     apt-get install -y ca-certificates curl gnupg lsb-release
 
-    # Adiciona a chave GPG oficial do Docker de forma segura
+    echo "Adicionando a chave GPG do Docker..."
     mkdir -p /etc/apt/keyrings
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     chmod a+r /etc/apt/keyrings/docker.gpg
 
-    # Adiciona o repositório Docker (com escapes para execução correta dentro do EOF)
-    echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \$(\. /etc/os-release && echo "\$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list
+    echo "Configurando o repositório do Docker..."
+    # --- LÓGICA CORRIGIDA ---
+    # 1. Define as variáveis PRIMEIRO para evitar erros de sintaxe
+    ARCH=\$(dpkg --print-architecture)
+    . /etc/os-release
+    
+    # 2. Agora, cria o arquivo usando as variáveis simples
+    echo "deb [arch=\$ARCH signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \$VERSION_CODENAME stable" > /etc/apt/sources.list.d/docker.list
 
     echo "Atualizando e instalando Docker CE..."
     apt-get update
     apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-    # IMPORTANTE: Adiciona o usuário 'deploy' ao grupo docker
+    # Adiciona o usuário 'deploy' ao grupo docker
     usermod -aG docker deploy
     
     echo "Docker instalado com sucesso! O usuário 'deploy' poderá executar comandos docker."
