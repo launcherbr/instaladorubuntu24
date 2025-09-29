@@ -6,13 +6,13 @@ Use esse instalador se o repositório do Whaticket estiver público.
 sudo apt -y update && apt -y upgrade
 ```
 
-FAZENDO DOWNLOAD DO INSTALADOR & INICIANDO A PRIMEIRA INSTALAÇÃO (USAR SOMENTE PARA PRIMEIRA INSTALAÇÃO):
+Fazendo download do instalador & iniciando a primeira instalação (usar somente para primeira instalação):
 
 ```bash
 sudo apt install -y git && git clone https://github.com/launcherbr/instalador.git instalador && sudo chmod -R 777 instalador  && cd instalador  && sudo ./install_primaria
 ```
 
-ACESSANDO DIRETORIO DO INSTALADOR & INICIANDO INSTALAÇÕES ADICIONAIS (USAR ESTE COMANDO PARA SEGUNDA OU MAIS INSTALAÇÃO:
+Acessando diretório do instalador & iniciando instalações adicionais (usar este comando para segunda ou mais instalação):
 
 ```bash
 cd instalador  && sudo ./install_instancia
